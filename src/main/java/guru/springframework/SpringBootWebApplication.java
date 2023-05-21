@@ -1,17 +1,17 @@
 package guru.springframework;
 
+import com.lark.oapi.Client;
 import com.lark.oapi.card.CardActionHandler;
 import com.lark.oapi.card.enums.MessageCardButtonTypeEnum;
 import com.lark.oapi.card.model.*;
+import com.lark.oapi.core.request.RequestOptions;
 import com.lark.oapi.core.utils.Jsons;
 import com.lark.oapi.event.EventDispatcher;
 import com.lark.oapi.sdk.servlet.ext.ServletAdapter;
-import com.lark.oapi.service.contact.v3.ContactService;
-import com.lark.oapi.service.contact.v3.model.P2UserCreatedV3;
 import com.lark.oapi.service.im.v1.ImService;
-import com.lark.oapi.service.im.v1.model.P1MessageReadV1;
-import com.lark.oapi.service.im.v1.model.P2MessageReadV1;
-import com.lark.oapi.service.im.v1.model.P2MessageReceiveV1;
+import com.lark.oapi.service.im.v1.enums.CreateMessageReceiveIdTypeEnum;
+import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
+import com.lark.oapi.service.im.v1.model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +23,11 @@ import java.util.Map;
 @SpringBootApplication
 public class SpringBootWebApplication {
 
+
+    @Value("${feishu.app.appId}")
+    private String appId;
+    @Value("${feishu.app.appSecret}")
+    private String appSecret;
     @Value("${feishu.app.verificationToken}")
     private String verificationToken;
     @Value("${feishu.app.encryptKey}")
@@ -30,6 +35,10 @@ public class SpringBootWebApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SpringBootWebApplication.class, args);
+    }
+    @Bean
+    public Client getClient() {
+        return Client.newBuilder(appId, appSecret).build();
     }
     @Bean
     public ServletAdapter getServletAdapter() {
@@ -207,30 +216,58 @@ public class SpringBootWebApplication {
                         encryptKey)
                 .onP2MessageReceiveV1(new ImService.P2MessageReceiveV1Handler() {
                     @Override
-                    public void handle(P2MessageReceiveV1 event) {
+                    public void handle(P2MessageReceiveV1 event) throws Exception {
                         System.out.println(Jsons.DEFAULT.toJson(event));
                         System.out.println(event.getRequestId());
+                        if (event.getEvent().getMessage().getContent().contains("\\前置规则查询")) {
+                            // 获取租户 key
+                            String messageId = event.getEvent().getMessage().getMessageId();
+                            String openId = event.getEvent().getSender().getSenderId().getOpenId();
+
+                            Client client = Client.newBuilder(appId, appSecret).build();
+                            // 发送请求
+                            CreateMessageResp resp = client.im().message().create(
+                                    CreateMessageReq.newBuilder()
+                                            .receiveIdType(CreateMessageReceiveIdTypeEnum.OPEN_ID)
+                                            .createMessageReqBody(
+                                                    CreateMessageReqBody.newBuilder()
+                                                            .content("{\"type\": \"template\", \"data\": { \"template_id\": \"ctp_AAuhmBbkpa9R\",\"template_variable\":{\"serBusinessTypeList\":[{\"text\":\"授信\",\"value\":\"10\"},{\"text\":\"用信\",\"value\":\"20\"}]}}}")
+                                                            .msgType("interactive")
+                                                            .receiveId(openId).build())
+                                            .build());
+
+
+                            // 处理服务端错误
+                            if (!resp.success()) {
+                                System.out.println(String.format("code:%s,msg:%s,reqId:%s"
+                                        , resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                                return;
+                            }
+
+                            // 业务数据处理
+                            System.out.println(Jsons.DEFAULT.toJson(resp.getData()));
+                        }
                     }
-                }).onP2UserCreatedV3(new ContactService.P2UserCreatedV3Handler() {
+                }).onP2MessageReadV1(new ImService.P2MessageReadV1Handler() {
                     @Override
-                    public void handle(P2UserCreatedV3 event) {
-                        System.out.println(Jsons.DEFAULT.toJson(event));
-                        System.out.println(event.getRequestId());
+                    public void handle(P2MessageReadV1 event) throws Exception {
+
                     }
-                })
-                .onP2MessageReadV1(new ImService.P2MessageReadV1Handler() {
+                }).onP2MessageReactionCreatedV1(new ImService.P2MessageReactionCreatedV1Handler() {
                     @Override
-                    public void handle(P2MessageReadV1 event) {
-                        System.out.println(Jsons.DEFAULT.toJson(event));
-                        System.out.println(event.getRequestId());
+                    public void handle(P2MessageReactionCreatedV1 event) throws Exception {
+
                     }
-                }).onP1MessageReadV1(new ImService.P1MessageReadV1Handler() {
+                }).onP2MessageRecalledV1(new ImService.P2MessageRecalledV1Handler() {
                     @Override
-                    public void handle(P1MessageReadV1 event) {
-                        System.out.println(Jsons.DEFAULT.toJson(event));
-                        System.out.println(event.getRequestId());
+                    public void handle(P2MessageRecalledV1 event) throws Exception {
+
                     }
-                })
-                .build();
+                }).onP2MessageReactionDeletedV1(new ImService.P2MessageReactionDeletedV1Handler() {
+                    @Override
+                    public void handle(P2MessageReactionDeletedV1 event) throws Exception {
+
+                    }
+                }).build();
     }
 }

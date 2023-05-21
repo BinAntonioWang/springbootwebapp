@@ -62,6 +62,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.larksuite.oapi</groupId>
+			<artifactId>oapi-sdk</artifactId>
+			<version>2.0.18</version>
+		</dependency>
+		<dependency>
 			<artifactId>oapi-sdk-servlet-ext</artifactId>
 			<groupId>com.larksuite.oapi</groupId>
 			<version>1.0.0-rc3</version>
@@ -72,11 +77,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.larksuite.oapi</groupId>
-			<artifactId>oapi-sdk</artifactId>
-			<version>2.0.18</version>
-		</dependency>
+
 	</dependencies>
 	
 	<build>
