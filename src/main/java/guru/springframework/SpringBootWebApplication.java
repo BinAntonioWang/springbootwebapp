@@ -2,22 +2,22 @@ package guru.springframework;
 
 import com.lark.oapi.Client;
 import com.lark.oapi.card.CardActionHandler;
-import com.lark.oapi.card.enums.MessageCardButtonTypeEnum;
-import com.lark.oapi.card.model.*;
-import com.lark.oapi.core.request.RequestOptions;
+import com.lark.oapi.card.model.CardAction;
+import com.lark.oapi.card.model.CustomResponse;
 import com.lark.oapi.core.utils.Jsons;
 import com.lark.oapi.event.EventDispatcher;
 import com.lark.oapi.sdk.servlet.ext.ServletAdapter;
 import com.lark.oapi.service.im.v1.ImService;
 import com.lark.oapi.service.im.v1.enums.CreateMessageReceiveIdTypeEnum;
-import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
 import com.lark.oapi.service.im.v1.model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
@@ -50,166 +50,87 @@ public class SpringBootWebApplication {
         return CardActionHandler.newBuilder(verificationToken, encryptKey,
                 new CardActionHandler.ICardHandler() {
                     @Override
-                    public Object handle(CardAction cardAction) {
+                    public Object handle(CardAction cardAction) throws Exception {
                         // 1.1 处理卡片行为
                         System.out.println(Jsons.DEFAULT.toJson(cardAction));
                         System.out.println(cardAction.getRequestId());
 
-                        return getCard();
+                        if(cardAction.getAction().getValue()!=null
+                                && cardAction.getAction().getValue().containsKey("cardType") && cardAction.getAction().getValue().get("cardType")!=null) {
+                            String cardType = (String)cardAction.getAction().getValue().get("cardType");
+                            // 返回业务类型主页选择
+                            if (cardType.equals("businessSelect")) {
+                                String openId = cardAction.getOpenId();
+                                Client client = Client.newBuilder(appId, appSecret).build();
+                                CreateMessageResp resp = null;
+                                String option = cardAction.getAction().getOption();
+
+                                resp = client.im().message().create(
+                                        CreateMessageReq.newBuilder()
+                                                .receiveIdType(CreateMessageReceiveIdTypeEnum.OPEN_ID)
+                                                .createMessageReqBody(
+                                                        CreateMessageReqBody.newBuilder()
+                                                                .content("{\"type\": \"template\", \"data\": { \"template_id\": \"" + option + "\",\"template_variable\":{\"serProductList\":[{\"text\":\"授信1111\",\"value\":\"101\"},{\"text\":\"用信2222\",\"value\":\"201\"}],\"serChannelList\":[{\"text\":\"Option\",\"value\":\"option\"}],\"serMerchantList\":[{\"text\":\"Option\",\"value\":\"option\"}]}}}")
+                                                                .msgType("interactive")
+                                                                .receiveId(openId).build())
+                                                .build());
+                                if (!resp.success()) {
+                                    System.out.println(String.format("code:%s,msg:%s,reqId:%s"
+                                            , resp.getCode(), resp.getMsg(), resp.getRequestId()));
+                                }
+                                System.out.println(Jsons.DEFAULT.toJson(resp.getData()));
+                            }else if (cardType.equals("business10")) {
+
+                            }else if (cardType.equals("business20")) {
+
+                            }else if (cardType.equals("business30")) {
+
+                            }else if (cardType.equals("business40")) {
+
+                            }else if (cardType.equals("business60")) {
+
+                            }else if (cardType.equals("business22")) {
+
+                            }
+                        }
+                        return getCustomResp();
                     }
                 }).build();
     }
-    private MessageCard getCard() {
-        // 配置
-        MessageCardConfig config = MessageCardConfig.newBuilder()
-                .enableForward(true)
-                .wideScreenMode(true)
-                .updateMulti(true)
-                .build();
-
-        // cardUrl
-        MessageCardURL cardURL = MessageCardURL.newBuilder()
-                .pcUrl("http://www.baidu.com")
-                .iosUrl("http://www.google.com")
-                .url("http://open.feishu.com")
-                .androidUrl("http://www.jianshu.com")
-                .build();
-
-        // header
-        MessageCardHeader header = MessageCardHeader.newBuilder()
-                .template("red")
-                .title(MessageCardPlainText.newBuilder()
-                        .content("1 级报警 - 数据平台")
-                        .build())
-                .build();
-
-        //elements
-        MessageCardDiv div1 = MessageCardDiv.newBuilder()
-                .fields(new MessageCardField[]{
-                        MessageCardField.newBuilder()
-                                .isShort(true)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("**🕐 时间：**2021-02-23 20:17:51")
-                                        .build())
-                                .build(),
-                        MessageCardField.newBuilder()
-                                .isShort(true)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("**🔢 事件 ID：：**336720")
-                                        .build())
-                                .build(),
-                        MessageCardField.newBuilder()
-                                .isShort(false)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("")
-                                        .build())
-                                .build(),
-                        MessageCardField.newBuilder()
-                                .isShort(true)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("**📋 项目：**\nQA 7")
-                                        .build())
-                                .build(),
-                        MessageCardField.newBuilder()
-                                .isShort(true)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("**👤 一级值班：**\n<at id=ou_c245b0a7dff2725cfa2fb104f8b48b9d>加多</at>")
-                                        .build())
-                                .build(),
-                        MessageCardField.newBuilder()
-                                .isShort(false)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("")
-                                        .build())
-                                .build(),
-                        MessageCardField.newBuilder()
-                                .isShort(true)
-                                .text(MessageCardLarkMd.newBuilder()
-                                        .content("**👤 二级值班：**\n<at id=ou_c245b0a7dff2725cfa2fb104f8b48b9d>加多</at>")
-                                        .build())
-                                .build()
-                })
-                .build();
-
-        MessageCardImage image = MessageCardImage.newBuilder()
-                .alt(MessageCardPlainText.newBuilder()
-                        .content("")
-                        .build())
-                .imgKey("img_v2_8b2ebeaf-c97c-411d-a4dc-4323e8cba10g")
-                .title(MessageCardLarkMd.newBuilder()
-                        .content("支付方式 支付成功率低于 50%：")
-                        .build())
-                .build();
-
-        MessageCardNote note = MessageCardNote.newBuilder()
-                .elements(new IMessageCardNoteElement[]{MessageCardPlainText.newBuilder()
-                        .content("🔴 支付失败数  🔵 支付成功数")
-                        .build()})
-                .build();
-
-        Map<String, Object> value = new HashMap<>();
-        value.put("key1", "value1");
-        MessageCardAction cardAction = MessageCardAction.newBuilder()
-                .actions(new IMessageCardActionElement[]{
-                        MessageCardEmbedButton.newBuilder()
-                                .buttonType(MessageCardButtonTypeEnum.PRIMARY)
-                                .value(value)
-                                .text(MessageCardPlainText.newBuilder().content("跟进处理").build())
-                                .build(),
-                        MessageCardEmbedSelectMenuStatic.newBuilder()
-                                .options(new MessageCardEmbedSelectOption[]{
-                                        MessageCardEmbedSelectOption.newBuilder()
-                                                .value("1")
-                                                .text(MessageCardPlainText.newBuilder()
-                                                        .content("屏蔽10分钟")
-                                                        .build())
-                                                .build(),
-                                        MessageCardEmbedSelectOption.newBuilder()
-                                                .value("2")
-                                                .text(MessageCardPlainText.newBuilder()
-                                                        .content("屏蔽30分钟")
-                                                        .build())
-                                                .build(),
-                                        MessageCardEmbedSelectOption.newBuilder()
-                                                .value("3")
-                                                .text(MessageCardPlainText.newBuilder()
-                                                        .content("屏蔽1小时")
-                                                        .build())
-                                                .build(),
-                                        MessageCardEmbedSelectOption.newBuilder()
-                                                .value("4")
-                                                .text(MessageCardPlainText.newBuilder()
-                                                        .content("屏蔽24小时")
-                                                        .build())
-                                                .build()
-                                })
-                                .placeholder(MessageCardPlainText.newBuilder()
-                                        .content("暂时屏蔽报警")
-                                        .build())
-                                .value(value)
-                                .build()
-                })
-                .build();
-
-        MessageCardHr hr = MessageCardHr.newBuilder().build();
-
-        MessageCardDiv div2 = MessageCardDiv.newBuilder()
-                .text(MessageCardLarkMd.newBuilder()
-                        .content(
-                                "🙋🏼 [我要反馈误报](https://open.feishu.cn/) | 📝 [录入报警处理过程](https://open.feishu.cn/)")
-                        .build())
-                .build();
-
-        MessageCard card = MessageCard.newBuilder()
-                .cardLink(cardURL)
-                .config(config)
-                .header(header)
-                .elements(new MessageCardElement[]{div1, note, image, cardAction, hr, div2})
-                .build();
-
-        return card;
+    // 构建自定义响应
+    private CustomResponse getCustomResp() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("serProductList", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("text", "授信123123");
+                    put("value", "101");
+                }},
+                new HashMap<String, String>() {{
+                    put("text", "用信123213213");
+                    put("value", "201");
+                }}
+        ));
+        map.put("serChannelList", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("text111111", "Option");
+                    put("value", "option");
+                }}
+        ));
+        map.put("serMerchantList", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("text1111111111", "Option");
+                    put("value", "option");
+                }}
+        ));
+        CustomResponse customResponse = new CustomResponse();
+        customResponse.setStatusCode(200);
+        customResponse.setBody(map);
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        headers.put("key1", Arrays.asList("a", "b"));
+        headers.put("key2", Arrays.asList("c", "d"));
+        customResponse.setHeaders(headers);
+        return customResponse;
     }
-
     @Bean
     public EventDispatcher getEventDispatcher() {
         return EventDispatcher.newBuilder(verificationToken,

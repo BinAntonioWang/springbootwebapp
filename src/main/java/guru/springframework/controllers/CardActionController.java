@@ -39,18 +39,5 @@ public class CardActionController {
     // 构建卡片响应
 
 
-    // 构建自定义响应
-    private CustomResponse getCustomResp() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("key1", "value1");
-        map.put("ke2", "value2");
-        CustomResponse customResponse = new CustomResponse();
-        customResponse.setStatusCode(0);
-        customResponse.setBody(map);
-        Map<String, List<String>> headers = new HashMap<String, List<String>>();
-        headers.put("key1", Arrays.asList("a", "b"));
-        headers.put("key2", Arrays.asList("c", "d"));
-        customResponse.setHeaders(headers);
-        return customResponse;
-    }
+
 }
