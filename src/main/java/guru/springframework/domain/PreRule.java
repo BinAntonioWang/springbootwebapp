@@ -11,18 +11,21 @@ public class PreRule {
     private String logicType;
     private String businessTypeId_1;
 
-    private String businessType;
-    private String productCode;
     private String channelId;
     private String merchantId;
+    private String entryType;
+
+    private String businessType;
+    private String productCode;
     private String batchFrom;
     private String subType;
     private String adjType;
-    private String entryType;
     private String orgAppType;
     private String fileType;
-    private String marketType;
     private String adjRange;
+
+    private String marketType;
+
 
     private String resultType;
 }
