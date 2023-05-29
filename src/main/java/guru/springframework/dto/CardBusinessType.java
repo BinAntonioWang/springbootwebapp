@@ -13,7 +13,7 @@ public enum CardBusinessType {
 
         @Override
         public String getTemplateId() {
-            return "ctp_AAg2dpK7feP7";
+            return "ctp_AAgbFBFGthrB";
         }
 
         @Override

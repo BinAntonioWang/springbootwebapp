@@ -23,8 +23,10 @@ public class JsonRepository {
 
     @PostConstruct
     public void init() throws IOException {
+        // 初始化文件
         // 读取JSON文件
         // 读取JSON文件成UTF-8字符串
+
         jsonData = new String(Files.readAllBytes(Paths.get(
                 "C:\\Users\\zyxf\\app\\springbootwebapp\\src\\main\\resources\\scence.json")), StandardCharsets.UTF_8);
 
@@ -55,6 +57,7 @@ public class JsonRepository {
             results.add(new VariableDto.A(text,JsonPath.using(config).parse(b).jsonString()));
         }
         return results;
+
     }
     public List<VariableDto.A> getRuleOptionList(List<PreRule> preRules, String keyword,String uuid) {
         String jsonRuleJson = JsonPath.parse(preRules).jsonString();

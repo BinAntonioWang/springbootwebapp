@@ -119,9 +119,9 @@ public class SpringBootWebApplication {
 
                                 List<PreRule> userSelectedValueData1 = JsonPath.using(config).parse(a).read( "$", typeRef);
                                 ApplyConditionEnum nextQueryEnum1 = ApplyConditionEnum.valueOf(currentKey).getNext();
-                                String nextKey1 = nextQueryEnum1.name();
+                                String nextKey = nextQueryEnum1.name();
                                 String uuid = UUID.randomUUID().toString();
-                                List<VariableDto.A> preRules= jsonRepository.getRuleOptionList(userSelectedValueData1, nextKey1,uuid);
+                                List<VariableDto.A> preRules= jsonRepository.getRuleOptionList(userSelectedValueData1, nextKey,uuid);
                                 //缓存更新
                                 C cacheObject =cache.get(uuid);
                                 if(cacheObject==null){
@@ -131,24 +131,29 @@ public class SpringBootWebApplication {
                                     cacheObject.setTemplate_variable(new ConcurrentHashMap<>());
                                 }
                                 cacheObject.setDate(new Date());
-                                cacheObject.getTemplate_variable().put(nextKey1,preRules);
+                                cacheObject.getTemplate_variable().put(nextKey,preRules);
                                 //返回一致结果给飞邮
                                 dto.getTemplate_variable().putAll(cacheObject.getTemplate_variable());
                                 cache.put(uuid, cacheObject);
                                 //保存缓存
-                                dto.setTemplate_id("ctp_AAg2dpK7feP7");
-
+                                dto.setTemplate_id("ctp_AAgbFBFGthrB");
+                                for (ApplyConditionEnum key : ApplyConditionEnum.values()) {
+                                    if (key.name().equals(nextKey)) {
+                                        continue;
+                                    }
+                                    dto.getTemplate_variable().put(key.name(), Collections.singletonList(new VariableDto.A("sds", "asd")));
+                                }
                                 String respDtoJson = JsonPath.using(config).parse(respDto).jsonString();
 
-                                resp = client.im().message().create(
-                                        CreateMessageReq.newBuilder()
-                                                .receiveIdType(CreateMessageReceiveIdTypeEnum.OPEN_ID)
-                                                .createMessageReqBody(
-                                                        CreateMessageReqBody.newBuilder()
-                                                                .content(respDtoJson)
-                                                                .msgType("interactive")
-                                                                .receiveId(openId).build())
-                                                .build());
+                                CreateMessageReq req = CreateMessageReq.newBuilder()
+                                        .receiveIdType(CreateMessageReceiveIdTypeEnum.OPEN_ID)
+                                        .createMessageReqBody(
+                                                CreateMessageReqBody.newBuilder()
+                                                        .content(respDtoJson)
+                                                        .msgType("interactive")
+                                                        .receiveId(openId).build())
+                                        .build();
+                                resp = client.im().message().create(req);
                                 if (!resp.success()) {
                                     System.out.println(String.format("code:%s,msg:%s,reqId:%s"
                                             , resp.getCode(), resp.getMsg(), resp.getRequestId()));
@@ -178,15 +183,37 @@ public class SpringBootWebApplication {
                             String nextKey = able.getNextBusinessAttr(optionSelected.getCurQueryKey());
                             List<PreRule> userSelectedValueData = optionSelected.getData();
                             List<VariableDto.A> preRules = jsonRepository.getRuleOptionList(userSelectedValueData, nextKey,uuid);
-                            cache.put(uuid, new C(new Date(),dto.getTemplate_variable()));
 
+                            C cacheObject =cache.get(uuid);
+                            if(cacheObject==null){
+                                cacheObject = new C(null,null);
+                            }
+                            if (cacheObject.getTemplate_variable() == null){
+                                cacheObject.setTemplate_variable(new ConcurrentHashMap<>());
+                            }
+                            cacheObject.setDate(new Date());
+                            cacheObject.getTemplate_variable().put(nextKey,preRules);
+                            //返回一致结果给飞邮
+                            dto.getTemplate_variable().putAll(cacheObject.getTemplate_variable());
+                            cache.put(uuid, cacheObject);
+                            //保存缓存
                             for (String key : able.allEnums()) {
-                                if (key.equals(nextKey)) {
+                                if (key.equals(nextKey) || dto.getTemplate_variable().containsKey(key)) {
                                     continue;
                                 }
-                                dto.getTemplate_variable().put(key, preRules);
+                                dto.getTemplate_variable().put(key, Collections.singletonList(new VariableDto.A("sds", "asd")));
                             }
-                            dto.getTemplate_variable().put(nextKey, preRules);
+
+
+//                            cache.put(uuid, new C(new Date(),dto.getTemplate_variable()));
+//
+//                            for (String key : able.allEnums()) {
+//                                if (key.equals(nextKey)) {
+//                                    continue;
+//                                }
+//                                dto.getTemplate_variable().put(key, preRules);
+//                            }
+//                            dto.getTemplate_variable().put(nextKey, preRules);
 
                             String templateId = able.getTemplateId();
                             dto.setTemplate_id(templateId);
@@ -236,7 +263,7 @@ public class SpringBootWebApplication {
                                             .receiveIdType(CreateMessageReceiveIdTypeEnum.OPEN_ID)
                                             .createMessageReqBody(
                                                     CreateMessageReqBody.newBuilder()
-                                                            .content("{\"type\": \"template\", \"data\": { \"template_id\": \"ctp_AAuhmBbkpa9R\",\"template_variable\":{\"serBusinessTypeList\":[{\"text\":\"授信\",\"value\":\"10\"},{\"text\":\"用信\",\"value\":\"20\"}]}}}")
+                                                            .content("{\"type\": \"template\", \"data\": { \"template_id\": \"ctp_AAgbyZqa1KCy\",\"template_variable\":{\"serBusinessTypeList\":[{\"text\":\"授信\",\"value\":\"10\"},{\"text\":\"用信\",\"value\":\"20\"}]}}}")
                                                             .msgType("interactive")
                                                             .receiveId(openId).build())
                                             .build());
