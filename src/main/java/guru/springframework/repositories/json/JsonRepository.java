@@ -54,6 +54,7 @@ public class JsonRepository {
             b.setCardType(preRules.isEmpty()?null:preRules.get(0).getBusinessType());
             b.setCurQueryKey(keyword);
             b.setSessionToken(uuid);
+            b.setCurQuerySelectedValue(text);
             results.add(new VariableDto.A(text,JsonPath.using(config).parse(b).jsonString()));
         }
         return results;

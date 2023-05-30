@@ -13,7 +13,12 @@ public enum CardBusinessType {
 
         @Override
         public String getTemplateId() {
-            return "ctp_AAgbFBFGthrB";
+            return "ctp_AAgb4GZKkP3n";
+        }
+
+        @Override
+        public String getNextBusinessText(String key) {
+            return ApplyConditionEnum.valueOf(key).getNext().getDescription();
         }
 
         @Override
@@ -31,6 +36,11 @@ public enum CardBusinessType {
         public String getTemplateId() {
             return "ctp_AAgeT0ozR6tF";
         }
+
+        @Override
+        public String getNextBusinessText(String key) {
+            return LoanConditionEnum.valueOf(key).getNext().getDescription();
+        }
     }),
     C30(new Businessable(){
         @Override
@@ -41,6 +51,11 @@ public enum CardBusinessType {
         @Override
         public String getTemplateId() {
             return "ctp_AAgXWjFf1nWd";
+        }
+
+        @Override
+        public String getNextBusinessText(String key) {
+            return AdjConditionEnum.valueOf(key).getNext().getDescription();
         }
     }),
     C40(new Businessable(){
@@ -53,6 +68,11 @@ public enum CardBusinessType {
         public String getTemplateId() {
             return "ctp_AAgXTG83XGOD";
         }
+
+        @Override
+        public String getNextBusinessText(String key) {
+            return PriceConditionEnum.valueOf(key).getNext().getDescription();
+        }
     }),
     C22(new Businessable(){
         @Override
@@ -64,6 +84,11 @@ public enum CardBusinessType {
         public String getTemplateId() {
             return "ctp_AAg2dpK7feP7";
         }
+
+        @Override
+        public String getNextBusinessText(String key) {
+            return ActiveConditionEnum.valueOf(key).getNext().getDescription();
+        }
     }),
     C60(new Businessable(){
         @Override
@@ -74,6 +99,11 @@ public enum CardBusinessType {
         @Override
         public String getTemplateId() {
             return "ctp_AAgXnZLxvcrm";
+        }
+
+        @Override
+        public String getNextBusinessText(String key) {
+            return PreviewConditionEnum.valueOf(key).getNext().getDescription();
         }
     });
     private Businessable able;

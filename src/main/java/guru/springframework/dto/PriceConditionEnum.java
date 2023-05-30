@@ -1,15 +1,22 @@
 package guru.springframework.dto;
 
 public enum PriceConditionEnum {
-    productCode(null),
+    ruleName(null, "规则名称"),
 
-    businessType(productCode);
+    productCode(ruleName, "产品号"),
 
+    businessType(productCode,"业务类型");
+
+    public String getDescription() {
+        return description;
+    }
+    private String description;
     private PriceConditionEnum next;
     public PriceConditionEnum getNext() {
         return next;
     }
-    PriceConditionEnum(PriceConditionEnum next){
+    PriceConditionEnum(PriceConditionEnum next, String description){
         this.next = next;
+        this.description = description;
     }
 }

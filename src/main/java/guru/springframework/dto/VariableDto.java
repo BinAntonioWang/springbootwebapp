@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Data
 public class VariableDto {
-    private Map<String, List<A>> template_variable = new HashMap<>();
+    private Map<String, Object> template_variable = new HashMap<>();
     private String template_id;
     @Data
     public static class A{
@@ -26,6 +26,7 @@ public class VariableDto {
     public static class B{
         private List<PreRule> data;
         private String curQueryKey;
+        private String curQuerySelectedValue;
         private String cardType;
         private String sessionToken;
     }
