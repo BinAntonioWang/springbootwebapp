@@ -7,8 +7,7 @@ public abstract class Businessable {
 //    String templateId = "ctp_AAg2dpK7feP7";
     public abstract String getNextBusinessAttr(String key);
     public abstract String getTemplateId();
-    public abstract String getNextBusinessText(String key);
-
+    public abstract String getBusinessText(String key);
     public List<String> allEnums() {
 
         return null;

@@ -7,29 +7,42 @@ import com.jayway.jsonpath.spi.json.GsonJsonProvider;
 import com.jayway.jsonpath.spi.mapper.GsonMappingProvider;
 import guru.springframework.domain.PreRule;
 import guru.springframework.dto.VariableDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class JsonRepository {
-    private String jsonData;
+    private static String jsonData;
+
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+
 
     @PostConstruct
     public void init() throws IOException {
         // 初始化文件
         // 读取JSON文件
         // 读取JSON文件成UTF-8字符串
-
-        jsonData = new String(Files.readAllBytes(Paths.get(
-                "C:\\Users\\zyxf\\app\\springbootwebapp\\src\\main\\resources\\scence.json")), StandardCharsets.UTF_8);
-
+        Resource resource = resourceLoader.getResource("classpath:scence.json");
+        try (Reader reader = new InputStreamReader(resource.getInputStream(),  StandardCharsets.UTF_8)) {
+            jsonData = FileCopyUtils.copyToString(reader);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
     /**
      * 通过关键字获取规则列表
@@ -38,7 +51,7 @@ public class JsonRepository {
      * @return
      */
     public List<VariableDto.A> getRuleOptionList(String jsonDataFilter, String keyword,String uuid) {
-        String jsonDataFiltered = jsonDataFilter==null ? jsonData:jsonDataFilter;
+        String jsonDataFiltered = StringUtils.isEmpty(jsonDataFilter) ? jsonData:jsonDataFilter;
         Configuration config = Configuration.defaultConfiguration()
                 .jsonProvider(new GsonJsonProvider())
                 .mappingProvider(new GsonMappingProvider());
