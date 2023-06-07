@@ -133,6 +133,11 @@ public class SpringBootWebApplication {
                                 String nextKey = able.getNextBusinessAttr(currentKey);;
                                 List<VariableDto.A> preRules= jsonRepository.getRuleOptionList(userSelectedValueData, nextKey,uuid);
 
+
+
+
+
+
                                 // init cache
                                 C cacheObject =cache.get(uuid);
                                 if(cacheObject==null){
@@ -157,6 +162,25 @@ public class SpringBootWebApplication {
                                         .filter(c -> !"EDD".equals(c.getSceneKey())).
                                         collect(Collectors.toList()));
 
+                                List<VariableDto.A> logicTypePreRules= jsonRepository.getRuleOptionList(userSelectedValueData, "logicType",uuid);
+                                List<VariableDto.A> logicTypeCommonPreRulesList = logicTypePreRules.stream().filter(ac-> "通用".equals(ac.getText())).collect(Collectors.toList());
+                                List<VariableDto.A> logicTypeNotPreRulesList = logicTypePreRules.stream().filter(ac-> "非".equals(ac.getText())).collect(Collectors.toList());
+                                String commonRuleStr  = logicTypeCommonPreRulesList.isEmpty()?null:logicTypeCommonPreRulesList.get(0).getValue();
+                                if (commonRuleStr != null){
+                                    List<PreRule> preRuleCommons = JsonPath.using(config).parse(commonRuleStr).read( "$", typeRef).getData();
+                                    cacheObject.getTemplate_variable().put("commonRuleList",preRuleCommons);//计算出下次可选列表领域
+                                }else{
+                                    cacheObject.getTemplate_variable().put("commonRuleList",new ArrayList<>());
+                                }
+                                String notRuleStr  = logicTypeNotPreRulesList.isEmpty()?null:logicTypeNotPreRulesList.get(0).getValue();
+                                if(notRuleStr   != null){
+                                    List<PreRule> preRuleNot = JsonPath.using(config).parse(notRuleStr).read( "$", typeRef).getData();
+                                    cacheObject.getTemplate_variable().put("notRuleList",preRuleNot);//计算出下次可选列表领域
+                                }else {
+                                    cacheObject.getTemplate_variable().put("notRuleList",new ArrayList<>());
+                                }
+
+
                                 for (String key : able.allEnums()) {
                                     if(!cacheObject.getTemplate_variable().containsKey(key)){
                                         dto.getTemplate_variable().put(key,"");
@@ -166,7 +190,7 @@ public class SpringBootWebApplication {
                                 dto.getTemplate_variable().putAll(cacheObject.getTemplate_variable());
                                 cache.put(uuid, cacheObject);
                                 //保存缓存
-                                dto.setTemplate_id("able.getTemplateId()");
+                                dto.setTemplate_id("ctp_AAgb4GZKkP3n");
 
 
                                 String respDtoJson = JsonPath.using(config).parse(respDto).jsonString();
@@ -242,7 +266,18 @@ public class SpringBootWebApplication {
                                         .map(c -> new D(able.getBusinessText(c.getKey()),c.getValue().toString()))
                                         .filter(c -> !"EDD".equals(c.getSceneKey())).
                                         collect(Collectors.toList()));
-                                cacheObject.getTemplate_variable().put("ruleList", userSelectedValueData);//计算出下次前端可选列表 businessType 代表业务场景下的可选列表
+                                cacheObject.getTemplate_variable().put("ruleList", userSelectedValueData);
+
+                                String logicType = userSelectedValueData.stream().map(c -> c.getLogicType()).distinct().findFirst().get();
+                                if("仅".equals(logicType)){
+                                    cacheObject.getTemplate_variable().remove("commonRuleList");//计算出下次可选列表领域
+                                    dto.getTemplate_variable().remove("commonRuleList");//计算出下次可选列表领域
+                                    cacheObject.getTemplate_variable().put("commonRuleList",new ArrayList<>());
+                                }
+
+                                cacheObject.getTemplate_variable().remove("ruleName");
+                                dto.getTemplate_variable().remove("ruleName");
+
                                 dto.getTemplate_variable().putAll(cacheObject.getTemplate_variable());
                                 cache.remove(uuid);
                                 //保存缓存
